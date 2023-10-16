@@ -1,0 +1,4 @@
+rootProject.name = 'course.template'
+
+include 'ui'
+include 'backend'

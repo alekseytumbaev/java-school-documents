@@ -1,0 +1,21 @@
+# IntelliJ
+.idea/
+**/out/
+
+# Gradle
+.gradle/
+**/build/
+gradle-local.properties
+!gradle-wrapper.jar
+
+# Java
+**/logs
+**/src/generated-sources
+
+# JS
+ui/.npmrc
+ui/node_modules/
+
+# Ansible
+ansible_roles
+/.idea/
