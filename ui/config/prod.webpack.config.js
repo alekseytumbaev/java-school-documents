@@ -1,24 +1,15 @@
 const path = require('path');
-const HtmlWebPackPlugin = require('html-webpack-plugin');
+const WebpackPwaManifest = require('webpack-pwa-manifest');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
 
-    entry: './src/index.js',
+    entry: path.join(process.cwd(), 'src/index.js'),
     output: {
         filename: 'main.js',
         path: path.join(process.cwd(), 'dist'),
-
-    },
-    devServer: {
-        contentBase: [
-            path.join(process.cwd(), 'public'),
-            path.join(process.cwd(), 'src'),
-        ],
-        compress: true,
-        port: 9000,
-        watchContentBase: true,
-        progress: true
+        clean: true,
     },
     module: {
         rules: [
@@ -43,9 +34,21 @@ module.exports = {
         ],
     },
     plugins: [
-        new HtmlWebPackPlugin({
-            template:path.join(process.cwd(), 'public/index.html'),
-            filename: 'index.html'
-        })
+        new CompressionPlugin({
+            algorithm: 'gzip',
+            test: /\.js$|\.css$|\.html$/,
+            threshold: 10240,
+            minRatio: 0.8,
+        }),
+
+        new WebpackPwaManifest({
+            name: 'React Boilerplate',
+            short_name: 'React BP',
+            description: 'My React Boilerplate-based project!',
+            background_color: '#fafafa',
+            theme_color: '#b1624d',
+            inject: true,
+            ios: true
+        }),
     ]
 };
