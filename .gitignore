@@ -15,6 +15,7 @@ gradle-local.properties
 # JS
 ui/.npmrc
 ui/node_modules/
+ui/dist/
 
 # Ansible
 ansible_roles

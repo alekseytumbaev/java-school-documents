@@ -10,23 +10,32 @@
 ## Подготовка
 
 Установите:
-
 - [node](https://nodejs.org) - front
 - [openjdk](https://openjdk.java.net) 15 - java бэк
+- [docker](https://docs.docker.com/engine/install/)
+- [docker-compose]()
 
 ## Запуск
 
-### Запуск фронта
+```
+./gradlew backend:bootJar
+```
 
 ```
-./gradlew ui:npm_run_start
+./gradlew ui:npm_run_build
 ```
-### Запуск бэка
+
 ```
-./gradlew backend:bootrun
+SPRING_DATASOURCE_URL='jdbc:postgresql://db:5432/documents' \
+SPRING_DATASOURCE_USERNAME='documents' \
+SPRING_DATASOURCE_PASSWORD='documents' \
+POSTGRES_USER='documents' \
+POSTGRES_PASSWORD='documents' \
+POSTGRES_DB='documents' \
+docker-compose up
 ```
 
 ### Адрес страницы
 ```
-http://localhost:9000/#/
+http://localhost:3006/#/
 ```

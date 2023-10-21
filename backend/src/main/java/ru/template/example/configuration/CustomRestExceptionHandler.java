@@ -1,5 +1,6 @@
 package ru.template.example.configuration;
 
+import lombok.Data;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,18 +12,49 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import ru.template.example.documents.exception.DocumentNotFoundException;
+import ru.template.example.documents.exception.InvalidDocumentStatusCodeException;
+import ru.template.example.documents.exception.NullDocumentIdException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-/**
- * Intercepts controller exception
- */
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
+
+    /**
+     * Обработчик исключения, при котором id документа должен был быть указан, но был равен null
+     */
+    @ExceptionHandler({NullDocumentIdException.class})
+    public ResponseEntity<RestApiError> handleNullDocumentIdException(final NullDocumentIdException ex) {
+        logger.error("Null document id", ex);
+        RestApiError restApiError = new RestApiError("Null document id", List.of(ex.getLocalizedMessage()));
+        return new ResponseEntity<>(restApiError, new HttpHeaders(), BAD_REQUEST);
+    }
+
+    /**
+     * Обработчик ошибки при ненайденном в базе документе
+     */
+    @ExceptionHandler({DocumentNotFoundException.class})
+    public ResponseEntity<RestApiError> handleDocumentNotFoundException(final DocumentNotFoundException ex) {
+        logger.error("Document not found", ex);
+        RestApiError restApiError = new RestApiError("Document not found", List.of(ex.getLocalizedMessage()));
+        return new ResponseEntity<>(restApiError, new HttpHeaders(), NOT_FOUND);
+    }
+
+    /**
+     * Обработчик неверного кода статуса документа
+     */
+    @ExceptionHandler({InvalidDocumentStatusCodeException.class})
+    public ResponseEntity<RestApiError> handleInvalidDocumentStatusCodeException(final InvalidDocumentStatusCodeException ex) {
+        logger.error("Invalid document status code", ex);
+        RestApiError restApiError = new RestApiError("Invalid document status code", List.of(ex.getLocalizedMessage()));
+        return new ResponseEntity<>(restApiError, new HttpHeaders(), BAD_REQUEST);
+    }
 
     /**
      * 400
@@ -58,12 +90,13 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
      * 500
      */
     @ExceptionHandler({Exception.class})
-    public ResponseEntity<RestApiError> handleAll(final Exception ex, final WebRequest request) {
+    public ResponseEntity<RestApiError> handleAll(final Exception ex) {
         logger.error("Internal server error", ex);
         RestApiError restApiError = new RestApiError("Internal server error", List.of(ex.getLocalizedMessage()));
         return new ResponseEntity<>(restApiError, new HttpHeaders(), INTERNAL_SERVER_ERROR);
     }
 
+    @Data
     public static class RestApiError {
 
         private String message;
@@ -72,22 +105,6 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
         public RestApiError(String message, List<String> errors) {
             this.message = message;
-            this.errors = errors;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public List<String> getErrors() {
-            return errors;
-        }
-
-        public void setErrors(List<String> errors) {
             this.errors = errors;
         }
     }

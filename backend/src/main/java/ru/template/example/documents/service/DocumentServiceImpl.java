@@ -1,67 +1,94 @@
 package ru.template.example.documents.service;
 
-import org.apache.commons.lang3.RandomUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.template.example.documents.controller.dto.DocumentDto;
 import ru.template.example.documents.controller.dto.Status;
-import ru.template.example.documents.store.DocumentStore;
+import ru.template.example.documents.exception.DocumentNotFoundException;
+import ru.template.example.documents.exception.NullDocumentIdException;
+import ru.template.example.documents.repository.DocumentRepository;
+import ru.template.example.documents.repository.entity.Document;
+import ru.template.example.documents.repository.entity.StatusCode;
+import ru.template.example.documents.util.DocumentMapper;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Primary
 public class DocumentServiceImpl implements DocumentService {
 
+    private final DocumentRepository documentRepo;
+
+    @Override
+    @Transactional
     public DocumentDto save(DocumentDto documentDto) {
-        if (documentDto.getId() == null) {
-            documentDto.setId(RandomUtils.nextLong(0L, 999L));
-        }
+        documentDto.setId(null);
         documentDto.setDate(new Date());
-        if (documentDto.getStatus() == null) {
-            documentDto.setStatus(Status.of("NEW", "Новый"));
-        }
-        DocumentStore.getInstance().getDocumentDtos().add(documentDto);
-        return documentDto;
+        Status status = Status.of(StatusCode.NEW.name(), StatusCode.NEW.getDisplayName());
+        documentDto.setStatus(status);
+        Document document = documentRepo.save(DocumentMapper.toEntity(documentDto));
+        return DocumentMapper.toDto(document, documentDto.getStatus().getName());
     }
 
-
-    public DocumentDto update(DocumentDto documentDto) {
-        List<DocumentDto> documentDtos = DocumentStore.getInstance().getDocumentDtos();
-        Optional<DocumentDto> dto = documentDtos.stream()
-                .filter(d -> d.getId().equals(documentDto.getId())).findFirst();
-        if (dto.isPresent()) {
-            delete(documentDto.getId());
-            save(documentDto);
-        }
-        return documentDto;
-    }
-
-    public void delete(Long id) {
-        List<DocumentDto> documentDtos = DocumentStore.getInstance().getDocumentDtos();
-        List<DocumentDto> newList = documentDtos.stream()
-                .filter(d -> !d.getId().equals(id)).collect(Collectors.toList());
-        documentDtos.clear();
-        documentDtos.addAll(newList);
-    }
-
+    @Override
+    @Transactional
     public void deleteAll(Set<Long> ids) {
-        List<DocumentDto> documentDtos = DocumentStore.getInstance().getDocumentDtos();
-        List<DocumentDto> newList = documentDtos.stream()
-                .filter(d -> !ids.contains(d.getId())).collect(Collectors.toList());
-        documentDtos.clear();
-        documentDtos.addAll(newList);
+        documentRepo.deleteByIdIn(ids);
     }
 
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        documentRepo.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public DocumentDto update(DocumentDto documentDto) {
+        if (documentDto.getId() == null) {
+            throw new NullDocumentIdException("Can't update document by id");
+        }
+        if (!existsById(documentDto.getId())) {
+            throw new DocumentNotFoundException(
+                    String.format("Can't update document with id=%d, because it's not found", documentDto.getId())
+            );
+        }
+        Document document = documentRepo.save(DocumentMapper.toEntity(documentDto));
+        return DocumentMapper.toDto(document, documentDto.getStatus().getName());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<DocumentDto> findAll() {
-        return DocumentStore.getInstance().getDocumentDtos();
+        List<Document> documents = documentRepo.findAll();
+        return documents.stream().map(d -> DocumentMapper.toDto(d, d.getStatus().getDisplayName()))
+                .collect(Collectors.toList());
     }
 
+
+    @Override
+    @Transactional(readOnly = true)
     public DocumentDto get(Long id) {
-        List<DocumentDto> documentDtos = DocumentStore.getInstance().getDocumentDtos();
-        return documentDtos.stream()
-                .filter(d -> d.getId().equals(id)).findFirst().get();
+        Document document = documentRepo.findById(id).orElseThrow(() -> new DocumentNotFoundException(
+                String.format("Document with id=%d not found", id)
+        ));
+        return DocumentMapper.toDto(document, document.getStatus().getDisplayName());
+    }
+
+    /**
+     * Проверяет, существует ли документ с переданным id
+     *
+     * @param id документа
+     * @return true, если документ существует, иначе - false
+     */
+    @Transactional(readOnly = true)
+    public boolean existsById(Long id) {
+        return documentRepo.existsById(id);
     }
 }
