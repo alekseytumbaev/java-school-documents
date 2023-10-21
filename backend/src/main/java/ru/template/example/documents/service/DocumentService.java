@@ -1,6 +1,8 @@
 package ru.template.example.documents.service;
 
 import ru.template.example.documents.controller.dto.DocumentDto;
+import ru.template.example.documents.exception.DocumentNotFoundException;
+import ru.template.example.documents.exception.NullDocumentIdException;
 
 import java.util.List;
 import java.util.Set;
@@ -32,6 +34,8 @@ public interface DocumentService {
      * Обновить документ
      * @param documentDto документ
      * @return обновленный документ
+     * @throws DocumentNotFoundException если документ не найден
+     * @throws NullDocumentIdException если id документа равен null
      */
     DocumentDto update(DocumentDto documentDto);
 
@@ -45,6 +49,7 @@ public interface DocumentService {
      * Получить документ по номеру
      * @param id идентификатор
      * @return документ
+     * @throws DocumentNotFoundException если документ не найден
      */
     DocumentDto get(Long id);
 }
