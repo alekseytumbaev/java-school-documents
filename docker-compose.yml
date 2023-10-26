@@ -1,7 +1,7 @@
 version: '3.1'
 services:
   ui:
-    container_name: ui
+    container_name: documents-ui
     build:
       context: ./ui
       dockerfile: Dockerfile
@@ -11,7 +11,7 @@ services:
       - backend
 
   backend:
-    container_name: backend
+    container_name: documents-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -23,9 +23,10 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
     depends_on:
       - db
+      - kafka
 
   db:
-    container_name: db
+    container_name: documents-db
     image: postgres:16-alpine
     ports:
       - "5432:5432"
@@ -35,3 +36,27 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - /var/lib/postgresql/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.1
+    container_name: documents-zookeeper
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    ports:
+      - '22181:2181'
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.1
+    container_name: documents-kafka
+    ports:
+      - '19092:19092'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_LOCAL://localhost:19092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_LOCAL:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    depends_on:
+      - zookeeper

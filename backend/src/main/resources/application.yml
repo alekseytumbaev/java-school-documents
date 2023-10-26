@@ -18,3 +18,10 @@ spring:
       ddl-auto: none
   liquibase:
     change-log: classpath:migrations/db.changelog-master.yml
+  kafka:
+    bootstrap-servers: kafka:9092
+
+kafka:
+  topic-names:
+    documents-in: "documents-in"
+    documents-out: "documents-out"

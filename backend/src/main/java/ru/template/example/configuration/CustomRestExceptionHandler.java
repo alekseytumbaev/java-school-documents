@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.template.example.documents.exception.DocumentNotFoundException;
+import ru.template.example.documents.exception.IllegalDocumentStatusException;
 import ru.template.example.documents.exception.InvalidDocumentStatusCodeException;
-import ru.template.example.documents.exception.NullDocumentIdException;
+import ru.template.example.documents.exception.OutboxSavingException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +27,18 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    /**
-     * Обработчик исключения, при котором id документа должен был быть указан, но был равен null
-     */
-    @ExceptionHandler({NullDocumentIdException.class})
-    public ResponseEntity<RestApiError> handleNullDocumentIdException(final NullDocumentIdException ex) {
-        logger.error("Null document id", ex);
-        RestApiError restApiError = new RestApiError("Null document id", List.of(ex.getLocalizedMessage()));
+    @ExceptionHandler(OutboxSavingException.class)
+    public ResponseEntity<RestApiError> handleOutboxSavingException(final OutboxSavingException ex) {
+        logger.error("Outbox saving error", ex);
+        RestApiError restApiError = new RestApiError("Outbox saving error", List.of(ex.getLocalizedMessage()));
+        return new ResponseEntity<>(restApiError, new HttpHeaders(), INTERNAL_SERVER_ERROR);
+    }
+    @ExceptionHandler(IllegalDocumentStatusException.class)
+    public ResponseEntity<RestApiError> handleIllegalDocumentStatusException(final IllegalDocumentStatusException ex) {
+        logger.error("Illegal document status", ex);
+        RestApiError restApiError = new RestApiError("Illegal document status", List.of(ex.getLocalizedMessage()));
         return new ResponseEntity<>(restApiError, new HttpHeaders(), BAD_REQUEST);
     }
-
     /**
      * Обработчик ошибки при ненайденном в базе документе
      */

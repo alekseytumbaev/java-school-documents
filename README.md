@@ -13,7 +13,7 @@
 - [node](https://nodejs.org) - front
 - [openjdk](https://openjdk.java.net) 15 - java бэк
 - [docker](https://docs.docker.com/engine/install/)
-- [docker-compose]()
+- [docker-compose](https://docs.docker.com/compose/install/)
 
 ## Запуск
 
@@ -35,7 +35,15 @@ POSTGRES_DB='documents' \
 docker-compose up
 ```
 
-### Адрес страницы
+### Использование
+Адрес страницы: http://localhost:3006/#/
+
+После отправки документа на обработку, сообщение об этом появится в топике `documents-in`.
+После этого отправьте в топик `documents-out` сообщение с таким же ключом, как у входящего, тело сообщения:
+```json
+{
+  "documentId": 1, //id документа, который находится в поле payload входящего сообщения
+  "statusCode": "ACCEPTED" //статус - результат обработки документа, может быть "ACCEPTED" или "REJECTED"
+}
 ```
-http://localhost:3006/#/
-```
+При передаче неправильных значений залогируется ошибка.

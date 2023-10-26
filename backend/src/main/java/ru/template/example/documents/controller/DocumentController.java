@@ -42,7 +42,7 @@ public class DocumentController {
     public DocumentDto send(@RequestBody IdDto id) {
         DocumentDto document = service.get(id.getId());
         document.setStatus(Status.of("IN_PROCESS", "В обработке"));
-        return service.update(document);
+        return service.sendForProcessing(document);
     }
 
     @DeleteMapping(path = "/{id}")

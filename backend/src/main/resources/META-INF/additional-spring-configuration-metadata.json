@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "kafka.topic-names.documents-in",
+      "type": "java.lang.String",
+      "description": "Название топика, в который поступают документы."
+    },
+    {
+      "name": "kafka.topic-names.documents-out",
+      "type": "java.lang.String",
+      "description": "Название топика, из которого читаются документы."
+    },
+    {
+      "name": "cors.allow",
+      "type": "java.lang.Boolean",
+      "description": "true - разрешить обращение из любых источников."
+    }
+  ]
+}
