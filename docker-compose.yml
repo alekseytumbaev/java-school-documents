@@ -6,7 +6,7 @@ services:
       context: ./ui
       dockerfile: Dockerfile
     ports:
-      - '3006:3005'
+      - '9000:3005'
     depends_on:
       - backend
 
@@ -21,6 +21,7 @@ services:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=${SPRING_KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - db
       - kafka

@@ -19,7 +19,7 @@ spring:
   liquibase:
     change-log: classpath:migrations/db.changelog-master.yml
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
 
 kafka:
   topic-names:

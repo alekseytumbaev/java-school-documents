@@ -18,6 +18,7 @@ java {
 }
 
 dependencies {
+    implementation("ma.glasnost.orika:orika-core:1.5.4")
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -39,5 +40,5 @@ dependencies {
 
 
 test {
-    include('ru/template/example/**')
+    include('ru/javaschool/**')
 }
