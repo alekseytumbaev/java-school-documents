@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.javaschool.documents.controller.dto.DocumentDto;
+import ru.javaschool.documents.controller.dto.IdDto;
 import ru.javaschool.documents.controller.dto.Status;
 import ru.javaschool.documents.exception.DocumentNotFoundException;
 import ru.javaschool.documents.exception.IllegalDocumentStatusException;
@@ -16,7 +17,6 @@ import ru.javaschool.documents.repository.entity.StatusCode;
 import ru.javaschool.documents.util.DocumentMapper;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,17 +57,18 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     @Transactional
-    public DocumentDto sendForProcessing(DocumentDto documentDto) {
-        Document document = documentRepo.findById(documentDto.getId()).
-                orElseThrow(() -> new DocumentNotFoundException(
-                        String.format("Can't process document with id=%d, because it's not found", documentDto.getId())));
+    public DocumentDto sendForProcessing(IdDto idDto) {
+        long id = idDto.getId();
+        Document document = documentRepo.findById(id)
+                .orElseThrow(() -> new DocumentNotFoundException(
+                        String.format("Can't process document with id=%d, because it's not found", id)));
         if (!document.getStatus().equals(StatusCode.NEW)) {
             throw new IllegalDocumentStatusException(
-                    String.format("Can't process document with id=%d, because it's already processed", documentDto.getId()));
+                    String.format("Can't process document with id=%d, because it's already processed", id));
         }
-        documentDto.setStatus(Status.of(StatusCode.IN_PROCESS.name(), StatusCode.IN_PROCESS.getDisplayName()));
-        document = documentRepo.save(documentMapper.map(documentDto, Document.class));
-        var savedDocumentDto = documentMapper.map(document, DocumentDto.class);
+        document.setStatus(StatusCode.IN_PROCESS);
+        document = documentRepo.save(document);
+        DocumentDto savedDocumentDto = documentMapper.map(document, DocumentDto.class);
         outboxService.addMessage(savedDocumentDto);
         return savedDocumentDto;
     }
@@ -77,10 +78,12 @@ public class DocumentServiceImpl implements DocumentService {
      * которые описаны в сообщениях. Помечает сообщения прочитанными.
      * <br/>
      * Если применить результат обработки не удается, пишет лог.
+     *
+     * @return документы, к которым были применены результаты обработки
      */
     @Scheduled(fixedDelay = 3000)
     @Transactional
-    public void readInboxAndApplyProcessingResult() {
+    public List<Document> readInboxAndApplyProcessingResult() {
         List<Inbox> unreadInboxes = inboxService.getUnread();
 
         Map<Long, String> documentIdToStatuses = unreadInboxes.stream()
@@ -90,35 +93,47 @@ public class DocumentServiceImpl implements DocumentService {
                 ));
         List<Document> documents = documentRepo.findAllById(documentIdToStatuses.keySet());
 
-        if (documentIdToStatuses.size() > documents.size()) {
-            Set<Long> foundIds = documents.stream()
-                    .map(Document::getId)
-                    .collect(Collectors.toSet());
-            Set<Long> notFoundIds = new HashSet<>(documentIdToStatuses.keySet());
-            notFoundIds.removeAll(foundIds);
-            log.error("Cannot apply processing results to some documents, because they are not found, ids: {}", notFoundIds);
-        }
-
         for (Document document : documents) {
             String status = documentIdToStatuses.get(document.getId());
-            if (status == null) {
-                log.warn("Cannot apply processing results to document with id={}, because it's not found", document.getId());
-                continue;
+            if (statusCanBeApplied(status, document)) {
+                document.setStatus(StatusCode.valueOf(status));
             }
-            if (!document.getStatus().equals(StatusCode.IN_PROCESS)) {
-                log.warn("Processing results can't be applied, because document with id={} was already processed",
-                        document.getId());
-                continue;
-            }
-            if (!status.equals(StatusCode.ACCEPTED.name()) && !status.equals(StatusCode.REJECTED.name())) {
-                log.warn("Processing results can't be applied, because results status is '{}', but should be one of {}",
-                        status, List.of(StatusCode.ACCEPTED.name(), StatusCode.REJECTED.name()));
-                continue;
-            }
-            document.setStatus(StatusCode.valueOf(status));
         }
-        documentRepo.saveAll(documents);
+        documents = documentRepo.saveAll(documents);
         inboxService.markAsRead(unreadInboxes.stream().map(Inbox::getId).collect(Collectors.toSet()));
+        return documents;
+    }
+
+    /**
+     * Проверяет, можно ли применить результат обработки к документу.
+     * <br/>
+     * Если нет - пишет лог.
+     *
+     * @param status   результат обработки
+     * @param document документ, к которому надо применить результат
+     * @return true, если результат обработки можно применить к документу, false - в противном случае
+     */
+    private boolean statusCanBeApplied(String status, Document document) {
+        if (!document.getStatus().equals(StatusCode.IN_PROCESS)) {
+            log.warn(
+                    "Processing results can't be applied to document with id={}, " +
+                            "because document status is '{}', but should be '{}'",
+                    document.getId(), document.getStatus(), StatusCode.IN_PROCESS
+            );
+            return false;
+
+        }
+        if (status == null ||
+                !status.equals(StatusCode.ACCEPTED.name()) &&
+                        !status.equals(StatusCode.REJECTED.name())) {
+            log.warn(
+                    "Processing results can't be applied to document with id={}, " +
+                            "because results status is '{}', but should be one of {}",
+                    document.getId(), status, List.of(StatusCode.ACCEPTED.name(), StatusCode.REJECTED.name())
+            );
+            return false;
+        }
+        return true;
     }
 
     @Override

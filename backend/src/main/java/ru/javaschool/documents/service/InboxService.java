@@ -46,12 +46,12 @@ public class InboxService {
     /**
      * Помечает сообщения с переданными id как прочитанные.
      *
-     * @param ids - id сообщений, которые нужно пометить как прочитанные
+     * @param ids id сообщений, которые нужно пометить как прочитанные
      */
     @Transactional
-    public void markAsRead(Collection<Long> ids) {
+    public List<Inbox> markAsRead(Collection<Long> ids) {
         List<Inbox> inboxes = inboxRepo.findAllByIdIn(ids);
         inboxes.forEach(in -> in.setRead(true));
-        inboxRepo.saveAll(inboxes);
+        return inboxRepo.saveAll(inboxes);
     }
 }

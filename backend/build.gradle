@@ -41,4 +41,5 @@ dependencies {
 
 test {
     include('ru/javaschool/**')
+    useJUnitPlatform()
 }

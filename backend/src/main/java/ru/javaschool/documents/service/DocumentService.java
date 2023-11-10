@@ -1,7 +1,9 @@
 package ru.javaschool.documents.service;
 
 import ru.javaschool.documents.controller.dto.DocumentDto;
+import ru.javaschool.documents.controller.dto.IdDto;
 import ru.javaschool.documents.exception.DocumentNotFoundException;
+import ru.javaschool.documents.exception.IllegalDocumentStatusException;
 
 import java.util.List;
 import java.util.Set;
@@ -33,13 +35,14 @@ public interface DocumentService {
     void delete(Long id);
 
     /**
-     * Обновить документ
+     * Отправить документ на обработку
      *
-     * @param documentDto документ
-     * @return обновленный документ
-     * @throws DocumentNotFoundException если документ не найден
+     * @param idDto идентификатор документа
+     * @return документ со статусом "в обработке"
+     * @throws DocumentNotFoundException      если документ не найден
+     * @throws IllegalDocumentStatusException если документ уже был обработан
      */
-    DocumentDto sendForProcessing(DocumentDto documentDto);
+    DocumentDto sendForProcessing(IdDto idDto);
 
 
     /**
