@@ -9,8 +9,8 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
-import ru.javaschool.documents.repository.entity.Outbox;
 import ru.javaschool.documents.exception.MessageSendingException;
+import ru.javaschool.documents.repository.entity.Outbox;
 
 import java.util.concurrent.ExecutionException;
 
@@ -40,7 +40,7 @@ public class KafkaOutboxProducer {
 
             @Override
             public void onFailure(Throwable ex) {
-                throw new MessageSendingException("Failed to send message", ex);
+                log.error("Failed to outbox to kafka", ex);
             }
         });
 

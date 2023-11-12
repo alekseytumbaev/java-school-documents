@@ -2,8 +2,6 @@ package ru.javaschool.documents.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import ru.javaschool.documents.controller.dto.DocumentDto;
 import ru.javaschool.documents.controller.dto.IdDto;
 import ru.javaschool.documents.controller.dto.ProcessingResultDto;
@@ -32,7 +30,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 public class DocumentServiceImplTest {
 
     private DocumentRepository documentRepo;
@@ -49,10 +46,7 @@ public class DocumentServiceImplTest {
         outboxService = mock(OutboxService.class);
         inboxService = mock(InboxService.class);
         documentMapper = new DocumentMapper();
-        documentService = new DocumentServiceImpl(documentRepo,
-                outboxService,
-                inboxService,
-                documentMapper);
+        documentService = new DocumentServiceImpl(documentRepo, outboxService, inboxService, documentMapper);
     }
 
     @Test

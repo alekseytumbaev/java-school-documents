@@ -3,9 +3,9 @@ package ru.javaschool.documents.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.javaschool.documents.exception.InboxAlreadyExistsException;
 import ru.javaschool.documents.repository.InboxRepository;
 import ru.javaschool.documents.repository.entity.Inbox;
-import ru.javaschool.documents.exception.InboxAlreadyExistsException;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,9 +38,7 @@ public class InboxService {
      */
     @Transactional(readOnly = true)
     public List<Inbox> getUnread() {
-        List<Inbox> inboxes = inboxRepo.findAllByIsRead(false);
-        inboxes.forEach(in -> in.setRead(true));
-        return inboxRepo.saveAll(inboxes);
+        return inboxRepo.findAllByIsRead(false);
     }
 
     /**

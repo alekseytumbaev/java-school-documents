@@ -7,9 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.javaschool.documents.exception.OutboxSavingException;
 import ru.javaschool.documents.repository.OutboxRepository;
 import ru.javaschool.documents.repository.entity.Outbox;
-import ru.javaschool.documents.exception.OutboxSavingException;
 
 import java.util.List;
 
@@ -26,6 +26,7 @@ public class OutboxService {
      *
      * @param payload тело сообщения
      * @return сохраненное исходящее сообщение
+     * @throws OutboxSavingException если не удалось сохранить
      */
     @Transactional
     public Outbox addMessage(Object payload) {
