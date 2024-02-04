@@ -10,14 +10,12 @@ interface and processed in a third-party application that interacts with Kafka.
 
 ## Prerequisites
 
-Установите:
-
-- [node](https://nodejs.org) - front
-- [openjdk](https://openjdk.java.net) 15 - java бэк
+- [node](https://nodejs.org)
+- [openjdk](https://openjdk.java.net)
 - [docker](https://docs.docker.com/engine/install/)
 - [docker-compose](https://docs.docker.com/compose/install/)
 
-## Запуск через докер
+## Running using docker
 
 ```
 ./gradlew backend:bootJar
@@ -38,9 +36,9 @@ POSTGRES_DB='documents' \
 docker-compose up
 ```
 
-## Запуск фронта и бэка локально
+## Running frontend and backend locally
 
-Запуск базы данных и кафки:
+Runnig kafka and database
 
 ```
 POSTGRES_USER='documents' \
@@ -49,13 +47,14 @@ POSTGRES_DB='documents' \
 docker-compose up
 ```
 
-Запуск фронта:
+Running frontend:
 
 ```
 ./gradlew ui:npm_run_start
 ```
 
-Запуск бэка:
+Running backend:
+
 ```
 ./gradlew backend:bootJar
 ```
@@ -69,12 +68,12 @@ java \
 -jar backend/build/libs/backend-1.0-SNAPSHOT.jar
 ```
 
-### Использование
+### Usage
 
-Адрес страницы: http://localhost:9000/#/
+Frontend url: http://localhost:9000/#/
 
-После отправки документа на обработку, сообщение об этом появится в топике `documents-in`.
-После этого отправьте в топик `documents-out` сообщение с таким же ключом, как у входящего, тело сообщения:
+After sending a document for processing, a message about it will appear in the `documents-in` topic.
+After that, send a message to the `documents-out` topic with the same key as the incoming one, the body of the message should be as following:
 
 ```json
 {
@@ -83,4 +82,4 @@ java \
 }
 ```
 
-При передаче неправильных значений залогируется ошибка.
+If incorrect values ​​are passed, an error is logged.
