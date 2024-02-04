@@ -77,8 +77,8 @@ After that, send a message to the `documents-out` topic with the same key as the
 
 ```json
 {
-  "documentId": 1, //id документа, который находится в поле payload входящего сообщения
-  "statusCode": "ACCEPTED"//статус - результат обработки документа, может быть "ACCEPTED" или "REJECTED"
+  "documentId": 1, //id of the document that is in the "payload" field of the incoming message
+  "statusCode": "ACCEPTED" //status - the result of document processing, can be "ACCEPTED" or "REJECTED"
 }
 ```
 
