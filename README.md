@@ -1,13 +1,14 @@
-## Описание
+## Description
 
-Фул стек приложение - справочник документов
+Document processing application. Documents are created and uploaded via a web
+interface and processed in a third-party application that interacts with Kafka.
 
-## Структура
+## Structure
 
-- `backend` - Бэкенд на java.
-- `ui` - Фронтенд на react + redux.
+- `backend` - java backend
+- `ui` - react + redux frontend
 
-## Подготовка
+## Prerequisites
 
 Установите:
 
